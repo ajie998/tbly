@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天猫淘宝批量留言唤醒</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            color: #e0e6ff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            background: #0a1929;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(255, 106, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 133, 51, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(231, 60, 126, 0.1) 0%, transparent 50%);
+            animation: aurora 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes aurora {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(64, 220, 255, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100vw);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(64, 220, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(64, 220, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(120deg, #ff6a00, #ff8533, #40dcff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 3s linear infinite;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(64, 220, 255, 0.2);
+        }
+
+        @keyframes shine {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        h2:hover {
+            animation-play-state: paused;
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-box {
+            margin-bottom: 0;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(64, 220, 255, 0.1);
+            box-shadow: 0 2px 6px rgba(0, 150, 255, 0.1);
+            padding: 15px;
+            border-radius: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-box h3 {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            display: inline-block;
+        }
+
+        .input-box h3::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(90deg, #ff6a00, #ff8533);
+            transition: width 0.3s ease;
+        }
+
+        .input-box h3:hover::after {
+            width: 100%;
+        }
+
+        #idCount {
+            font-size: 12px;
+            color: #666;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 150px;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .description {
+            color: #a0a8d4;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .control-panel {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        button {
+            background: linear-gradient(45deg, rgba(64, 220, 255, 0.8), rgba(77, 143, 255, 0.8));
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(64, 220, 255, 0.2);
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(64, 220, 255, 0.3);
+            background: linear-gradient(45deg, rgba(77, 143, 255, 0.9), rgba(64, 220, 255, 0.9));
+        }
+
+        .delay-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        #delay {
+            width: 50px;
+            padding: 4px;
+            text-align: center;
+            font-size: 13px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        #delay:focus {
+            border-color: #ff6a00;
+            box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.1);
+        }
+
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(64, 220, 255, 0.1);
+        }
+
+        .log-item {
+            margin: 4px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            line-height: 1.3;
+            transition: all 0.2s ease;
+        }
+
+        .log-item.success {
+            background: rgba(64, 220, 255, 0.03);
+            border-left: 3px solid #40dcff;
+            color: #e0e6ff;
+        }
+
+        .log-item.error {
+            background: rgba(255, 99, 71, 0.03);
+            border-left: 3px solid #ff6347;
+            color: #ffe0e0;
+        }
+
+        .right-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #ff6a00;
+            box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(64, 220, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(64, 220, 255, 0.3);
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .copyright {
+            max-width: 900px;
+            margin: 20px auto 0;
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .copyright p {
+            margin: 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            display: inline-block;
+        }
+
+        .qq-link {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            vertical-align: middle;
+        }
+
+        .qq-link:hover {
+            background: rgba(255, 106, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .qq-link:hover svg path {
+            fill: rgba(255, 255, 255, 0.7);
+        }
+
+        .qq-link svg {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(64, 220, 255, 0.1);
+            color: #e0e6ff;
+        }
+
+        .tech-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                linear-gradient(to right, rgba(26, 31, 60, 0.95), rgba(26, 31, 60, 0.8)),
+                url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoNjQsIDIyMCwgMjU1LCAwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=');
+            animation: techMove 20s linear infinite;
+        }
+
+        .tech-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                linear-gradient(90deg, transparent 0%, rgba(64, 220, 255, 0.08) 45%, transparent 100%);
+            animation: techLines 8s ease-in-out infinite;
+        }
+
+        @keyframes techMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
+        }
+
+        @keyframes techLines {
+            0% { transform: translateX(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        .tech-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            overflow: hidden;
+        }
+
+        .tech-slides {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6;
+            transition: opacity 2s ease-in-out;
+            animation: slideshow 24s infinite;
+        }
+
+        .slide:nth-child(1) {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        .slide:nth-child(2) {
+            background: linear-gradient(-45deg, #4158D0, #C850C0, #FFCC70);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            animation-delay: 5s;
+        }
+
+        .slide:nth-child(3) {
+            background: linear-gradient(-45deg, #0093E9, #80D0C7, #3EECAC);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            animation-delay: 10s;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+                opacity: 0;
+            }
+            25% {
+                opacity: 1;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 1;
+            }
+            75% {
+                opacity: 1;
+            }
+            100% {
+                background-position: 0% 50%;
+                opacity: 0;
+            }
+        }
+
+        .tech-slideshow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 41, 0.65);
+            backdrop-filter: blur(10px);
+        }
+
+        .tech-background {
+            opacity: 0.3;
+        }
+
+        .tech-lines {
+            opacity: 0.15;
+        }
+
+        .particle {
+            opacity: 0.3;
+        }
+
+        .tech-slides {
+            mix-blend-mode: screen;
+        }
+
+        /* 添加动态网格效果 */
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(64, 220, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(64, 220, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -2;
+            animation: gridMove 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                transform: translateY(30px) translateX(30px);
+            }
+        }
+
+        /* 添加光效动画 */
+        .light-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, 
+                rgba(64, 220, 255, 0.1) 0%,
+                transparent 50%);
+            z-index: -1;
+            animation: lightPulse 8s ease-in-out infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes lightPulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        /* 视频背景容器 */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -4;
+            overflow: hidden;
+        }
+
+        /* 视频遮罩层 */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                rgba(10, 25, 41, 0.2),
+                rgba(10, 25, 41, 0.1)
+            );
+            backdrop-filter: blur(0px);
+            pointer-events: none;
+        }
+
+        /* 调整其他背景效果 */
+        .tech-slideshow,
+        .tech-background,
+        .tech-lines {
+            opacity: 0.08;
+        }
+
+        /* 优化容器样式 */
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(64, 220, 255, 0.15);
+        }
+
+        /* 调整粒子效果透明度 */
+        .particle {
+            opacity: 0.3;
+        }
+
+        /* 移除可能存在的悬浮按钮样式 */
+        .float-button,
+        .layer-switch,
+        .switch-button {
+            display: none !important;
+        }
+
+        /* 移除切换层级按钮 */
+        .switch-layer,
+        #switchLayer,
+        .layer-switch,
+        .switch-button,
+        [class*="switch-layer"],
+        [id*="switchLayer"],
+        [class*="layer-switch"],
+        [class*="switch-button"] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-background">
+        <iframe 
+            src="//player.bilibili.com/player.html?bvid=BV1fa4y1C7RA&page=1&high_quality=1&danmaku=0&autoplay=1&as_wide=1&t=0" 
+            allowfullscreen="true"
+            width="100%" 
+            height="100%" 
+            scrolling="no" 
+            border="0" 
+            frameborder="no" 
+            framespacing="0"
+            sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts allow-popups"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"
+        ></iframe>
+        <div class="video-overlay"></div>
+    </div>
+    <div class="tech-slideshow">
+        <div class="tech-slides">
+            <div class="slide"></div>
+            <div class="slide"></div>
+            <div class="slide"></div>
+        </div>
+    </div>
+    <div class="tech-background"></div>
+    <div class="tech-lines"></div>
+    <div class="particles"></div>
+    <div class="container">
+        <h2>天猫淘宝批量留言唤醒</h2>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="input-group">
+                    <div class="input-box">
+                        <h3>发送方ID</h3>
+                        <input type="text" id="fromUid" value="奥克斯厨卫旗舰店:小银" oninput="updateFromUid(this.value)">
+                        <div class="description">请输入发送方ID（如：店铺名:客服名）</div>
+                    </div>
+                    <div class="input-box">
+                        <h3>接收方ID列表 <span id="idCount" style="font-size: 14px; color: #666; font-weight: normal;">(当前共 0 个ID)</span></h3>
+                        <textarea id="toUids" placeholder="每行输入一个接收方ID" oninput="updateIdCount()"></textarea>
+                        <div class="description">每行一个ID，如果已包含cntaobao前缀会自动处理</div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <div class="delay-input">
+                        <label>间隔时间(秒)：</label>
+                        <input type="number" id="delay" value="2" min="1">
+                    </div>
+                    <button onclick="wakeupBatchAliWW()">批量开始对话</button>
+                </div>
+            </div>
+            <div class="right-panel">
+                <h3>执行日志</h3>
+                <div id="logContainer" class="log-container"></div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2024 Designed by 杰 | 
+                <a href="tencent://message/?uin=879365639&Menu=yes" class="qq-link" title="联系作者">
+                    <svg viewBox="0 0 1024 1024" width="16" height="16">
+                        <path fill="#666666" d="M824.8 613.2c-16-51.4-34.4-94.6-62.7-165.3C766.5 262.2 689.3 112 511.5 112 331.7 112 256.2 265.2 261 447.9c-28.4 70.8-46.7 113.7-62.7 165.3-34 109.5-23 154.8-14.6 155.8 18 2.2 70.1-82.4 70.1-82.4 0 49 25.2 112.9 79.8 159-26.4 8.1-85.7 29.9-71.6 53.8 11.4 19.3 196.2 12.3 249.5 6.3 53.3 6 238.1 13 249.5-6.3 14.1-23.8-45.3-45.7-71.6-53.8 54.6-46.2 79.8-110.1 79.8-159 0 0 52.1 84.6 70.1 82.4 8.5-1.1 19.5-46.4-14.5-155.8z"/>
+                    </svg>
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function addLog(message, type = 'success') {
+            const logContainer = document.getElementById('logContainer');
+            const logItem = document.createElement('div');
+            logItem.className = `log-item ${type}`;
+            const time = new Date().toLocaleTimeString();
+            logItem.textContent = `[${time}] ${message}`;
+            logContainer.insertBefore(logItem, logContainer.firstChild);
+        }
+
+        function formatId(id) {
+            return id.trim().replace(/^cntaobao/i, '');
+        }
+
+        async function wakeupAliWW(fromUid, toUid) {
+            fromUid = formatId(fromUid);
+            toUid = formatId(toUid);
+            
+            const url = `aliim:sendmsg?uid=cntaobao${fromUid}&touid=cntaobao${toUid}`;
+            
+            try {
+                // 检查账号格式
+                if (toUid.includes('非法') || toUid.match(/[<>:"/\\|?*]/)) {
+                    throw new Error('非法账号');
+                }
+
+                // 使用最稳定的唤醒方式
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                await sleep(300);
+                iframe.remove();
+
+                // 再用 window.open 尝试一次
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    await sleep(200);
+                    newWindow.close();
+                }
+
+            } catch (error) {
+                console.error('唤醒出错:', error.message);
+                throw new Error(error.message || '唤醒失败');
+            }
+        }
+
+        // 添加失败记录数组
+        let failedAccounts = [];
+
+        // 添加新函数用于更新ID总数
+        function updateIdCount() {
+            const textarea = document.getElementById('toUids');
+            const countDisplay = document.getElementById('idCount');
+            
+            // 获取非空ID列表并去重
+            const ids = [...new Set(textarea.value.split('\n')
+                .map(id => id.trim())
+                .filter(id => id.length > 0))];
+            
+            // 更新文本框内容（去重后的内容）
+            textarea.value = ids.join('\n');
+            
+            // 更新数量显示
+            countDisplay.textContent = `当前共 ${ids.length} 个ID`;
+        }
+
+        // 添加商家ID更新函数
+        function updateFromUid(value) {
+            const fromUid = value.trim();
+            if (fromUid) {
+                addLog(`发送方ID已更新为: ${fromUid}`, 'success');
+            }
+        }
+
+        async function wakeupBatchAliWW() {
+            const fromUid = document.getElementById('fromUid').value.trim();
+            const toUidsText = document.getElementById('toUids').value;
+            const delay = Math.max(document.getElementById('delay').value * 1000, 1000);
+            
+            // 重置失败记录
+            failedAccounts = [];
+            
+            if (!fromUid) {
+                addLog('请输入发送方ID', 'error');
+                return;
+            } else {
+                addLog(`当前使用发送方ID: ${fromUid}`);
+            }
+
+            // 获取去重后的ID列表
+            const toUids = [...new Set(toUidsText.split('\n')
+                .map(id => formatId(id))
+                .filter(id => id.length > 0))];
+            
+            if (!toUids.length) {
+                addLog('请输入接收方ID', 'error');
+                return;
+            }
+
+            addLog(`开始批量处理，共 ${toUids.length} 组对话`);
+
+            const focusWindow = window.open('about:blank', 'focusWindow', 'width=300,height=200,top=0,left=0');
+            if (focusWindow) {
+                focusWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>处理中</title>
+                        <style>
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                padding: 20px; 
+                                background: #f8f9fa;
+                                color: #495057;
+                                text-align: center;
+                            }
+                            h3 { 
+                                color: #ff6a00; 
+                                margin: 0;
+                                font-size: 16px;
+                            }
+                            p {
+                                margin: 15px 0;
+                                font-size: 14px;
+                            }
+                            .progress {
+                                margin-top: 15px;
+                                font-size: 12px;
+                                color: #666;
+                            }
+                            .failed {
+                                margin-top: 10px;
+                                color: #dc3545;
+                                font-size: 12px;
+                            }
+                            .current {
+                                margin-top: 10px;
+                                color: #0066cc;
+                                font-size: 12px;
+                                font-weight: bold;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h3>杰哥提示你请勿关闭窗口</h3>
+                        <p>批量处理进行中...</p>
+                        <div class="current">当前第：0/${toUids.length}</div>
+                        <div class="progress">总进度：0/${toUids.length}</div>
+                        <div class="failed">失败数量：0</div>
+                    </body>
+                    </html>
+                `);
+            }
+
+            try {
+                for (let i = 0; i < toUids.length; i++) {
+                    const toUid = toUids[i];
+                    
+                    // 更新当前处理的序号
+                    if (focusWindow) {
+                        focusWindow.document.querySelector('.current').textContent = 
+                            `当前第：${i + 1}/${toUids.length}`;
+                    }
+
+                    try {
+                        addLog(`第 ${i + 1} 组：${fromUid} -> ${toUid} 开始唤醒`);
+                        await wakeupAliWW(fromUid, toUid);
+                        
+                        // 更新进度
+                        if (focusWindow) {
+                            focusWindow.document.querySelector('.progress').textContent = 
+                                `总进度：${i + 1}/${toUids.length}`;
+                        }
+                    } catch (error) {
+                        // 记录失败账号
+                        failedAccounts.push(toUid);
+                        addLog(`第 ${i + 1} 组：${fromUid} -> ${toUid} 唤醒失败`, 'error');
+                        
+                        // 更新失败数量
+                        if (focusWindow) {
+                            focusWindow.document.querySelector('.failed').textContent = 
+                                `失败数量：${failedAccounts.length}`;
+                        }
+                    }
+
+                    if (i < toUids.length - 1) {
+                        const waitTime = delay / 1000;
+                        addLog(`等待 ${waitTime} 秒后继续...`);
+                        await sleep(delay);
+                    }
+                }
+            } finally {
+                if (focusWindow) {
+                    focusWindow.close();
+                }
+            }
+            
+            // 处理完成后显示失败账号列表
+            if (failedAccounts.length > 0) {
+                addLog(`处理完成！共 ${failedAccounts.length} 个账号唤醒失败：`, 'error');
+                addLog(failedAccounts.join('\n'), 'error');
+            } else {
+                addLog('批量处理完成！全部唤醒成功！');
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                wakeupBatchAliWW();
+            }
+        });
+
+        // 生成浮动粒子
+        function createParticles() {
+            const container = document.querySelector('.particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // 随机大小
+                const size = Math.random() * 5 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // 随机位置
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // 随机动画延迟
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // 页面加载时创建粒子
+        document.addEventListener('DOMContentLoaded', createParticles);
+
+        // 确保视频自动播放
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframe = document.querySelector('.video-background iframe');
+            if (iframe) {
+                // 确保视频自动播放
+                iframe.onload = function() {
+                    // 尝试与iframe通信以确保播放
+                    try {
+                        iframe.contentWindow.postMessage('play', '*');
+                    } catch(e) {
+                        console.log('Video autoplay attempted');
+                    }
+                };
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframe = document.querySelector('.video-background iframe');
+            if (iframe) {
+                // 添加必要的参数
+                let src = iframe.src;
+                if (!src.includes('&autoplay=1')) {
+                    src += '&autoplay=1';
+                }
+                if (!src.includes('&danmaku=0')) {
+                    src += '&danmaku=0';
+                }
+                iframe.src = src;
+                
+                // 尝试启用音频
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'setVolume',
+                        value: 100
+                    }, '*');
+                } catch(e) {
+                    console.log('Volume setting attempted');
+                }
+            }
+        });
+
+        // 在页面加载完成后尝试启用音频
+        window.addEventListener('load', function() {
+            const iframe = document.querySelector('.video-background iframe');
+            if (iframe) {
+                // 尝试与iframe通信以启用音频
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'setVolume',
+                        value: 100
+                    }, '*');
+                } catch(e) {
+                    console.log('Volume setting attempted');
+                }
+            }
+        });
+
+        // 监听用户交互以启用音频
+        document.addEventListener('click', function() {
+            const iframe = document.querySelector('.video-background iframe');
+            if (iframe) {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'setVolume',
+                        value: 100
+                    }, '*');
+                } catch(e) {
+                    console.log('Volume setting attempted on user interaction');
+                }
+            }
+        }, { once: true });
+    </script>
+</body>
+</html> 
